@@ -4,11 +4,12 @@
 #include "Input.h"
 #include <cmath>
 #include <numbers>
+#include "TextureManager.h"
 
 TitleScene::~TitleScene() {
 	delete modelPlayer_;
 	delete modelTitle_;
-
+	/*delete backgroundSprite_;*/
 }
 void TitleScene::Initialize() { 
 	modelTitle_ = Model::CreateFromOBJ("titleFont", true);
@@ -26,6 +27,8 @@ void TitleScene::Initialize() {
 	worldTransformPlayer_.rotation_.y = 0.95f * std::numbers::pi_v<float>;
 	worldTransformPlayer_.translation_.x = -2.0f;
 	worldTransformPlayer_.translation_.y = -10.0f;
+	/*backgroundTH_ = TextureManager::Load("titleBackground.png");
+	backgroundSprite_ = Sprite::Create(backgroundTH_, {0, 0});*/
 }
 void TitleScene::Update() {
 	if (Input::GetInstance()->PushKey(DIK_SPACE)) {
@@ -42,6 +45,17 @@ void TitleScene::Update() {
 void TitleScene::Draw() {
 	DirectXCommon* dxCommon_=DirectXCommon::GetInstance();
 	ID3D12GraphicsCommandList* commandList = dxCommon_->GetCommandList();
+	//// 背景スプライト描画前処理
+	//Sprite::PreDraw(commandList);
+
+	///// <summary>
+	///// ここに背景スプライトの描画処理を追加できる
+	///// </summary>
+	//
+	//// スプライト描画後処理
+	//Sprite::PostDraw();
+	//// 深度バッファクリア
+	//dxCommon_->ClearDepthBuffer();
 	Model::PreDraw(commandList);
 	modelTitle_->Draw(worldTransformTitle_, viewProjection_);
 	modelPlayer_->Draw(worldTransformPlayer_, viewProjection_);

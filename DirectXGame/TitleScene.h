@@ -2,6 +2,7 @@
 #include "Model.h"
 #include "ViewProjection.h"
 #include "WorldTransform.h"
+#include "Sprite.h"
 class TitleScene {
 public:
 	~TitleScene();
@@ -21,4 +22,6 @@ private:
 	Model* modelPlayer_ = nullptr;
 	Model* modelTitle_ = nullptr;
 	
+	/*uint32_t backgroundTH_ = 0;
+	Sprite* backgroundSprite_ = nullptr;*/
 };

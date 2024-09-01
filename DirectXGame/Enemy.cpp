@@ -38,6 +38,10 @@ Vector3 Enemy::GetWorldPosition() {
 	return worldPos;
 }
 
+ void Enemy::SetWorldPositionX(float pos) {
+	worldTransform_.translation_.x = pos;
+}
+
 AABB Enemy::GetAABB() {
 	Vector3 worldPos = GetWorldPosition();
 	AABB aabb;

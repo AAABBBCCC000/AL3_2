@@ -49,6 +49,10 @@ public:
 	void AnimateTurn();
 	void OnCollision(const Enemy* enemy);
 
+    int GetSpawn() { return spawn_; }
+	bool GetHitGoal() { return hitGoal_; }
+	void Respawn(const Vector3& position);
+
 private:
 	struct CollisionMapInfo {
 		bool ceiling = false;
@@ -71,8 +75,8 @@ private:
 	bool isDead_ = false;
 
 	static inline const float kAcceleration = 0.01f;
-	static inline const float kAttenuation = 0.05f;
-	static inline const float kLimitRunSpeed = 0.4f;
+	static inline const float kAttenuation = 0.09f;
+	static inline const float kLimitRunSpeed = 0.3f;
 
 	LRDirection lrDirection_ = LRDirection::kRight;
 
@@ -113,5 +117,8 @@ private:
 	void CheckMapCollisionLeft(CollisionMapInfo& info);
     void CheckMapCollisionRight(CollisionMapInfo& info);
 	void UpdateOnGround(const CollisionMapInfo& info);
+
+	int spawn_ = 0;
+	bool hitGoal_ = false;
 };
 

@@ -32,7 +32,7 @@ private:
 	Player* target_ = nullptr;
 	Rect movableArea_ = {0, 100, 0, 100};
 	Vector3 destination_;
-	Vector3 targetOffset_ = {0, 0, -15.0f};
+	Vector3 targetOffset_ = {0, -15.0f, -15.0f};
 	static inline const Rect targetMargin = {-9.0f, 9.0f, -5.0f, 5.0f};
 
 	// 座標補間割合

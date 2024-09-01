@@ -18,6 +18,22 @@ GameScene::~GameScene() {
 
 	worldTransformBlocks_.clear();
 
+	for (std::vector<WorldTransform*>& worldTransformGoalBlockLine : worldTransformGoalBlocks_) {
+		for (WorldTransform* worldTransformGoalBlock : worldTransformGoalBlockLine) {
+			delete worldTransformGoalBlock;
+		}
+	}
+
+	worldTransformGoalBlocks_.clear();
+
+	for (std::vector<WorldTransform*>& worldTransformSaveBlockLine : worldTransformSaveBlocks_) {
+		for (WorldTransform* worldTransformSaveBlock : worldTransformSaveBlockLine) {
+			delete worldTransformSaveBlock;
+		}
+	}
+
+	worldTransformGoalBlocks_.clear();
+
 	delete debugCamera_;
 
 	delete modelSkydome_;
@@ -48,6 +64,8 @@ void GameScene::Initialize() {
 	// 3Dモデルの生成
 	model_ = Model::Create();
 	modelBlock_ = Model::CreateFromOBJ("block");
+	modelGoal_ = Model::CreateFromOBJ("goalBlock");
+	modelSave_ = Model::CreateFromOBJ("saveBlock");
 	// ワールドトランスフォームの初期化
 	worldTransform_.Initialize();
 	// ビュープロジェクションの初期化
@@ -57,7 +75,7 @@ void GameScene::Initialize() {
 	player_ = new Player();
 	// 自キャラの初期化
 	// 座標をマップチップ番号で指定
-	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(3,18);
+	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(3,13);
 	player_->Initialize(playerPosition,&viewProjection_);
 
 	// 天球の生成
@@ -76,18 +94,32 @@ void GameScene::Initialize() {
 	player_->SetMapChipField(mapChipField_);
 
 	GenerateBlocks();
+	GenerateGoalBlocks();
+	GenerateSaveBlocks();
 
 	cameraController = new CameraController;
 	cameraController->Initialize();
 	cameraController->SetTarget(player_);
 	cameraController->Reset();
 
-	CameraController::Rect cameraArea = {12.0f, 100 - 12.0f, 6.0f, 6.0f};
+	CameraController::Rect cameraArea = {12.0f, 100 - 12.0f, 6.0f, 15.0f};
 	cameraController->SetMovableArea(cameraArea);
 
 	for (int32_t i = 0; i < 3; i++) {
 		Enemy* newEnemy = new Enemy();
-		Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(15+i, 18-i);
+		Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(15, 18-i);
+		newEnemy->Initialize(enemyPosition, &viewProjection_);
+		enemies_.push_back(newEnemy);
+	}
+	for (int32_t i = 0; i < 3; i++) {
+		Enemy* newEnemy = new Enemy();
+		Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(48, 18 - i);
+		newEnemy->Initialize(enemyPosition, &viewProjection_);
+		enemies_.push_back(newEnemy);
+	}
+	for (int32_t i = 0; i < 3; i++) {
+		Enemy* newEnemy = new Enemy();
+		Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(81, 18 - i);
 		newEnemy->Initialize(enemyPosition, &viewProjection_);
 		enemies_.push_back(newEnemy);
 	}
@@ -110,11 +142,63 @@ void GameScene::GenerateBlocks() {
 
 	for (uint32_t i = 0; i < numBlockVirtical; ++i) {
 		for (uint32_t j = 0; j < numBlockHorizontal; ++j) {
-			if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kBlock){
+			if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
 				WorldTransform* worldTransform = new WorldTransform();
 				worldTransform->Initialize();
 				worldTransformBlocks_[i][j] = worldTransform;
 				worldTransformBlocks_[i][j]->translation_ = mapChipField_->GetMapChipPositionByIndex(j, i);
+			}
+		}
+	}
+}
+
+void GameScene::GenerateGoalBlocks() {
+
+	// 要素数
+	uint32_t numBlockVirtical = mapChipField_->GetNumBlockVirtical();
+	uint32_t numBlockHorizontal = mapChipField_->GetNumBlockHorizontal();
+
+	// 要素数を変更する
+	worldTransformGoalBlocks_.resize(numBlockVirtical);
+
+	// キューブの生成
+	for (uint32_t i = 0; i < numBlockVirtical; ++i) {
+		worldTransformGoalBlocks_[i].resize(numBlockHorizontal);
+	}
+
+	for (uint32_t i = 0; i < numBlockVirtical; ++i) {
+		for (uint32_t j = 0; j < numBlockHorizontal; ++j) {
+			if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kGoalBlock) {
+				WorldTransform* worldTransform = new WorldTransform();
+				worldTransform->Initialize();
+				worldTransformGoalBlocks_[i][j] = worldTransform;
+				worldTransformGoalBlocks_[i][j]->translation_ = mapChipField_->GetMapChipPositionByIndex(j, i);
+			}
+		}
+	}
+}
+
+void GameScene::GenerateSaveBlocks() {
+
+	// 要素数
+	uint32_t numBlockVirtical = mapChipField_->GetNumBlockVirtical();
+	uint32_t numBlockHorizontal = mapChipField_->GetNumBlockHorizontal();
+
+	// 要素数を変更する
+	worldTransformSaveBlocks_.resize(numBlockVirtical);
+
+	// キューブの生成
+	for (uint32_t i = 0; i < numBlockVirtical; ++i) {
+		worldTransformSaveBlocks_[i].resize(numBlockHorizontal);
+	}
+
+	for (uint32_t i = 0; i < numBlockVirtical; ++i) {
+		for (uint32_t j = 0; j < numBlockHorizontal; ++j) {
+			if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kSaveBlock) {
+				WorldTransform* worldTransform = new WorldTransform();
+				worldTransform->Initialize();
+				worldTransformSaveBlocks_[i][j] = worldTransform;
+				worldTransformSaveBlocks_[i][j]->translation_ = mapChipField_->GetMapChipPositionByIndex(j, i);
 			}
 		}
 	}
@@ -157,6 +241,9 @@ void GameScene::Update() {
 			if (enemy != nullptr) {
 				enemy->Update();
 			}
+			if (enemy->GetWorldPosition().x < mapChipField_->GetMapChipPositionByIndex(0, 18).x) {
+				enemy->SetWorldPositionX(mapChipField_->GetMapChipPositionByIndex(100, 0).x);
+			}
 		}
 
 		cameraController->Update();
@@ -189,6 +276,34 @@ void GameScene::Update() {
 
 				// 定数バッファに転送
 				worldTransformBlockYoko->TransferMatrix();
+			}
+		}
+
+		for (std::vector<WorldTransform*> worldTransformGoalBlockTate : worldTransformGoalBlocks_) {
+			for (WorldTransform* worldTransformGoalBlockYoko : worldTransformGoalBlockTate) {
+				if (!worldTransformGoalBlockYoko)
+					continue;
+
+				// アフィン変換行列の作成
+				//(MakeAffineMatrix：自分で作った数学系関数)
+				worldTransformGoalBlockYoko->matWorld_ = MakeAffineMatrix(worldTransformGoalBlockYoko->scale_, worldTransformGoalBlockYoko->rotation_, worldTransformGoalBlockYoko->translation_);
+
+				// 定数バッファに転送
+				worldTransformGoalBlockYoko->TransferMatrix();
+			}
+		}
+
+		for (std::vector<WorldTransform*> worldTransformSaveBlockTate : worldTransformSaveBlocks_) {
+			for (WorldTransform* worldTransformSaveBlockYoko : worldTransformSaveBlockTate) {
+				if (!worldTransformSaveBlockYoko)
+					continue;
+
+				// アフィン変換行列の作成
+				//(MakeAffineMatrix：自分で作った数学系関数)
+				worldTransformSaveBlockYoko->matWorld_ = MakeAffineMatrix(worldTransformSaveBlockYoko->scale_, worldTransformSaveBlockYoko->rotation_, worldTransformSaveBlockYoko->translation_);
+
+				// 定数バッファに転送
+				worldTransformSaveBlockYoko->TransferMatrix();
 			}
 		}
 		CheckAllCollisions();
@@ -245,11 +360,24 @@ void GameScene::ChangePhase() {
 	            deathParticles_ = new DeathParticles;
 			    deathParticles_->Initialize(deathParticlesPosition, &viewProjection_);
            }
+		   if (player_->GetHitGoal()) {
+			    finished_ = true;
+		   }
 		    break;
 	case Phase::kDeath:
 		    if (deathParticles_ && deathParticles_->IsFinished()) {
-			    finished_ = true;
+			    if (player_->GetSpawn() == 0) {
+				    finished_ = true;
+			    } else if (player_->GetSpawn() == 1) {
+				phase_ = Phase::kPlay;
+				
+				player_->Respawn(mapChipField_->GetMapChipPositionByIndex(52, 10));
+
+			    }
+                
+			    
 			}
+		   
 		    break;
 	}
 }
@@ -286,7 +414,7 @@ void GameScene::Draw() {
 	if (!player_->IsDead()) {
 		player_->Draw();
     }
-
+	
 	for (Enemy* enemy : enemies_) {
 	    if (enemy != nullptr) {
 		    enemy->Draw();
@@ -306,11 +434,26 @@ void GameScene::Draw() {
 		for (WorldTransform* worldTransformBlockYoko : worldTransformBlockTate) {
 			if (!worldTransformBlockYoko)
 				continue;
-
+			
 			modelBlock_->Draw(*worldTransformBlockYoko, viewProjection_);
 		}
 	}
+	for (std::vector<WorldTransform*> worldTransformGoalBlockTate : worldTransformGoalBlocks_) {
+		for (WorldTransform* worldTransformGoalBlockYoko : worldTransformGoalBlockTate) {
+			if (!worldTransformGoalBlockYoko)
+				continue;
 
+			modelGoal_->Draw(*worldTransformGoalBlockYoko, viewProjection_);
+		}
+	}
+	for (std::vector<WorldTransform*> worldTransformSaveBlockTate : worldTransformSaveBlocks_) {
+		for (WorldTransform* worldTransformSaveBlockYoko : worldTransformSaveBlockTate) {
+			if (!worldTransformSaveBlockYoko)
+				continue;
+
+			modelSave_->Draw(*worldTransformSaveBlockYoko, viewProjection_);
+		}
+	}
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
 #pragma endregion

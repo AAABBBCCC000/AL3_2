@@ -25,8 +25,14 @@ void Player::Initialize(const Vector3& position, ViewProjection *viewProjection)
 	// 引数の内容をメンバ変数に記録
 	model_ = Model::CreateFromOBJ("player", true); //	textureHandle_ = textureHandle;
 
+	hitGoal_ = false;
 }
-
+void Player::Respawn(const Vector3& position) {
+	isDead_ = false;
+	worldTransform_.translation_ = position;
+	//worldTransform_.rotation_.y = - (std::numbers::pi_v<float> / 2.0f);
+	velocity_ = {};
+}
 void Player::Update(){
 
 	InputMove();
@@ -144,14 +150,24 @@ void Player::CheckMapCollisionDown(CollisionMapInfo& info) {
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;
 	}
-
+	if (mapChipType == MapChipType::kSaveBlock) {
+		hit = true;
+		spawn_ = 1;
+	}
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom]);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	//mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;
 	}
-
+	if (mapChipType == MapChipType::kSaveBlock) {
+		hit = true;
+		spawn_ = 1;
+	}
+	if (mapChipType == MapChipType::kGoalBlock) {
+		hit = true;
+		hitGoal_ = true;
+	}
 	// ブロックにヒット？
 	if (hit) {
 		// 現在座標が壁の外か判定
@@ -271,14 +287,14 @@ void Player::CheckMapCollisionRight(CollisionMapInfo& info) {
 	MapChipField::IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightTop]);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex + 1, indexSet.yIndex);
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex - 1, indexSet.yIndex);
 	if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
 	}
 	
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom]);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex + 1, indexSet.yIndex);
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex - 1, indexSet.yIndex);
 	if (mapChipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
 	}

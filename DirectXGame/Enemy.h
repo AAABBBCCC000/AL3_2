@@ -14,6 +14,7 @@ public:
 	void Draw();
 	void OnCollision(const Player* player);
 	Vector3 GetWorldPosition();
+	void SetWorldPositionX(float pos);
 	AABB GetAABB();
 	
 private:
